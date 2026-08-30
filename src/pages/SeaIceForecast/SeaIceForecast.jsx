@@ -8,6 +8,7 @@ import { ToggleChip } from "../../components/Controls/Controls";
 import LoadingScreen from "../../components/LoadingScreen/LoadingScreen";
 import { forecastHorizons, seaIceLegend, sicColor, forecastMeta } from "../../data/seaIceData";
 import { fetchSeaIceForecast } from "../../services/api";
+import antarcticaMap from "../../assets/antarctica_map.jpg";
 
 const HORIZON_LABELS = { 0: "NOW", 24: "+24H", 48: "+48H", 72: "+72H", 96: "+96H", 120: "+120H" };
 
@@ -144,6 +145,16 @@ export default function SeaIceForecast() {
                       opacity="0.85"
                     />
                   )}
+
+                  {/* Stations on the 40x40 map. 
+                      Maitri is in Queen Maud Land (center-left top of landmass): col 22, row 31 
+                      Bharati is in Princess Elizabeth Land (center-right top of landmass): col 32, row 32 
+                  */}
+                  <circle cx={22 * cellSizeX + cellSizeX/2} cy={31 * cellSizeY + cellSizeY/2} r="1.2" fill="#39ff14" />
+                  <text x={22 * cellSizeX - 1.5} y={31 * cellSizeY + 1} fill="#ffffff" fontSize="3" fontWeight="bold" textAnchor="end" style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.9))" }}>Maitri</text>
+                  
+                  <circle cx={32 * cellSizeX + cellSizeX/2} cy={32 * cellSizeY + cellSizeY/2} r="1.2" fill="#39ff14" />
+                  <text x={32 * cellSizeX - 1.5} y={32 * cellSizeY + 1} fill="#ffffff" fontSize="3" fontWeight="bold" textAnchor="end" style={{ filter: "drop-shadow(0px 1px 2px rgba(0,0,0,0.9))" }}>Bharati</text>
 
                   <defs>
                     <pattern id="hatch" width="2" height="2" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">

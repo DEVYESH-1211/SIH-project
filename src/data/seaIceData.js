@@ -11,26 +11,69 @@ function seeded(seed) {
     return s / 233280;
   };
 }
+const ANTARCTICA_MASK_BOTTOM = [
+  "                                        ",
+  "                                        ",
+  "                                        ",
+  "   1                                    ",
+  "   11                                   ",
+  "   11                                   ",
+  "   111                 11               ",
+  "  11111               11111      11     ",
+  "  11111             111111111  11111    ",
+  " 1111111           111111111111111111   ",
+  "1111111111      11111111111111111111111 ",
+  "111111111111   1111111111111111111111111",
+  "1111111111111111111111111111111111111111",
+  "1111111111111111111111111111111111111111",
+  "1111111111111111111111111111111111111111"
+];
 
 // Generates a lat/lon-ish grid of sea-ice concentration values (0-1) around Antarctica.
 function buildGrid(forecastHour) {
   const rand = seeded(forecastHour + 7);
-  const rows = 22;
-  const cols = 34;
+  const rows = 40; // 40x40 grid ensures square cells (2.5 units each in 100x100 viewBox)
+  const cols = 40;
   const cells = [];
+  
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      // radial falloff from the pole (center) so the ice pack looks plausible
-      const cx = cols / 2;
-      const cy = rows * 0.15;
-      const dx = (c - cx) / cols;
-      const dy = (r - cy) / rows;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const drift = forecastHour / 480; // ice edge retreats slightly over time in this mock
-      const base = Math.max(0, 1.05 - dist * 2.1 - drift * 0.6);
-      const noise = (rand() - 0.5) * 0.35;
-      const sic = Math.min(1, Math.max(0, base + noise));
-      cells.push({ row: r, col: c, sic: Number(sic.toFixed(3)) });
+      let isLand = false;
+      const maskOffset = rows - ANTARCTICA_MASK_BOTTOM.length;
+      
+      if (r >= maskOffset) {
+        const maskR = r - maskOffset;
+        isLand = ANTARCTICA_MASK_BOTTOM[maskR][c] === '1';
+      }
+      
+      let base = isLand ? 1.0 : 0.05;
+      
+      if (!isLand && r >= maskOffset - 8) {
+        // Generate sea ice tapering off above the coast
+        let coastDist = 10;
+        for (let ir = maskOffset; ir < rows; ir++) {
+          for (let ic = 0; ic < cols; ic++) {
+            if (ANTARCTICA_MASK_BOTTOM[ir - maskOffset][ic] === '1') {
+              let d = Math.sqrt((r-ir)*(r-ir) + (c-ic)*(c-ic));
+              if (d < coastDist) coastDist = d;
+            }
+          }
+        }
+        if (coastDist < 6) {
+           base = Math.max(0, 0.95 - coastDist * 0.18);
+        }
+      }
+
+      const drift = forecastHour / 120;
+      base = Math.max(0, base - drift * 0.15); // Ice melts over time
+
+      const noise = (rand() - 0.5) * 0.2;
+      let sic = Math.min(1, Math.max(0, base + noise));
+      
+      // Clear out the very top of the map so it's pure open ocean
+      if (r < maskOffset - 10) sic = 0;
+
+      cells.push({ row: r, col: c, sic: Number(sic.toFixed(3)), isLand });
     }
   }
   return { rows, cols, cells };

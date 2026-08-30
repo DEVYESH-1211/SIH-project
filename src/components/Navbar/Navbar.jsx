@@ -18,7 +18,7 @@ export default function Navbar() {
           </div>
           <div className="leading-tight">
             <p className="font-mono-num text-[10px] uppercase tracking-[0.28em] text-ice-400/80">SIH 2026 · Prototype</p>
-            <p className="text-sm font-semibold tracking-wide text-glow">SAGAR-DRISHTI</p>
+            <p className="text-sm font-semibold tracking-wide text-glow">SOUTHERN VISION</p>
           </div>
         </div>
 
